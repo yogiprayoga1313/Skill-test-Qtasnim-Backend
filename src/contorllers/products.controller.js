@@ -1,35 +1,18 @@
 const productModel = require("../models/products.model")
+const stockModel = require("../models/stok.model")
 
 exports.getProducts = async (request, response) => {
-    console.log(request.query)
     try { 
-        const sortWhaitlist = ["name"]
-        if(request.query.sort && !sortWhaitlist.includes(request.query.sort)){
-            return response.status(400).json({
-                success: false,
-                message:`Please choose one of the following sorting options: ${sortWhaitlist.join(",")}`
-            })
-        }
-
-        const sortByWhaitlist = ["asc", "desc"]
-        if(request.query.sortBy && !sortByWhaitlist.includes(request.query.sortBy.toLowerCase())){
-            return response.status(400).json({
-                success: false,
-                message:`Please choose one of the following sorting options:  ${sortByWhaitlist.join(",")}`
-            })
-        }
-
-        const data = await productModel.findAllProducts(request.query.page, 
-            request.query.limit, 
-            request.query.search,
-            request.query.sort,
-            request.query.sortBy)
+        const {page, limit, search, sort, sortBy} = request.query
+        const data = await productModel.findAllProducts(page, limit, search, sort, sortBy)
+        const countProduct = await productModel.countProduct(page, limit, search, sort, sortBy)
+        const totalPage = Math.ceil(parseInt(countProduct.totalData)/parseInt(limit || 5))
         return response.json({
             success: true,
             message: "List off all products",
-            results: data
+            results: data,
+            totalPage : totalPage
         })
-
     } 
     catch (error) {
         console.log(error)
@@ -78,10 +61,16 @@ exports.createProducts = async (request, response) => {
             })
         }
         const product = await productModel.insert(request.body)
+        const dataStock = {
+            product_id : product.id,
+            quantity : request.body.quantity
+        }
+        const stok = await stockModel.insert(dataStock)
+        const results = {...product, stock : stok.quantity}
         return response.json({
             success: true,
             message: "Create products success",
-            results: product
+            results: results
         })
     }catch(err){
         console.log(err)
@@ -99,6 +88,8 @@ exports.deleteProducts = async (request, response) => {
             })
         }
         await productModel.destroy(request.params.id)
+        await stockModel.destroyByProductId(request.params.id)
+
         return response.json({
             success: true,
             message: "Delete products sucessfully",

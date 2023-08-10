@@ -1,30 +1,14 @@
 const transactionsModel = require("../models/transactions.model")
+const productModel = require("../models/products.model")
+
 const productController = require('../contorllers/products.controller');
 
 exports.getTransactions = async (request, response) => {
     console.log(request.query)
     try { 
-        const sortWhaitlist = ["name"]
-        if(request.query.sort && !sortWhaitlist.includes(request.query.sort)){
-            return response.status(400).json({
-                success: false,
-                message:`Please choose one of the following sorting options: ${sortWhaitlist.join(",")}`
-            })
-        }
+        const {page, limit, search, sort, sortBy} = request.query
 
-        const sortByWhaitlist = ["asc", "desc"]
-        if(request.query.sortBy && !sortByWhaitlist.includes(request.query.sortBy.toLowerCase())){
-            return response.status(400).json({
-                success: false,
-                message:`Please choose one of the following sorting options:  ${sortByWhaitlist.join(",")}`
-            })
-        }
-
-        const data = await transactionsModel.findAllTransactions(request.query.page, 
-            request.query.limit, 
-            request.query.search,
-            request.query.sort,
-            request.query.sortBy)
+        const data = await transactionsModel.findAllTransactions(page, limit, search, sort, sortBy)
         return response.json({
             success: true,
             message: "List off all Transactions",
@@ -37,35 +21,6 @@ exports.getTransactions = async (request, response) => {
     }
 }
 
-// exports.createTransaction = async (request, response) => {
-//     try{
-//         if(!request.product_id,
-//             !request.qunatity_sold,
-//             !request.body.date_transaction){
-//             return response.status(404).json({
-//                 success: false,
-//                 message: "Product ID and Quantity Sold are required",
-//                 results: null
-//             })
-//         }
-//         const transactions = await transactionsModel.insert(request.body)
-
-//         await updateProductStock(product_id, quantity_sold);
-
-//         return response.json({
-//             success: true,
-//             message: "Create transactions success",
-//             results: transactions
-//         })
-//     }catch(err){
-//         console.log(err)
-//         return response.status(500).json({
-//             success: false,
-//             message: "Internal server error",
-//             results: null
-//         });
-//     }
-// }
 
 exports.createTransaction = async (request, response) => {
     try {
@@ -80,24 +35,12 @@ exports.createTransaction = async (request, response) => {
         }
 
         const transactions = await transactionsModel.insert(request.body);
-        try {
-            const getProductQuery = `
-                SELECT stock FROM product
-                WHERE id = $1
-            `;
-            const getProductValues = [product_id];
-            const product = await db.query(getProductQuery, getProductValues);
-
-            if (product.rows.length > 0) {
-                const currentStock = product.rows[0].stock;
-                const updatedStock = currentStock - quantity_sold;
-
-                await productController.updateProductStock(product_id, updatedStock);
-            }
-        } catch (error) {
-            console.log("Error updating product stock:", error);
-        }
-
+        const stock = await productModel.findOne(product_id)
+        const stokAwal = stock.quantity
+        const stokTerjual = quantity_sold
+        const stockAkhir = stokAwal - stokTerjual
+        const updateDataStock = await productModel.updateStock(product_id, stockAkhir)
+   
         return response.json({
             success: true,
             message: "Create transactions success",
