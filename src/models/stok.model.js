@@ -41,10 +41,22 @@ DELETE FROM "stok" WHERE "id"=$1
 
 exports.insert = async function (data) {
     const query = `
-  INSERT INTO "stok" ("product_id", "stok") 
+  INSERT INTO "stok" ("product_id", "quantity") 
   VALUES ($1,$2) RETURNING *
   `
-    const values = [data.product_id, data.stok]
+    const values = [data.product_id, data.quantity]
     const { rows } = await db.query(query, values)
     return rows[0]
   }
+
+exports.update = async function (id, data) {
+    const query = `
+UPDATE "stok" 
+SET "quantity"=$2
+WHERE "id"=$1
+RETURNING *
+`
+    const values = [id, data.quantity]
+    const { rows } = await db.query(query, values)
+    return rows[0]
+}

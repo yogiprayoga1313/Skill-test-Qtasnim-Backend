@@ -6,5 +6,6 @@ stokRouter.get("/", stokController.getStok)
 stokRouter.get("/:id", stokController.getOneStok)
 stokRouter.post("/", stokController.createStok)
 stokRouter.delete("/:id", stokController.deleteStok)
+stokRouter.patch("/:id", stokController.updateStok)
 
 module.exports = stokRouter

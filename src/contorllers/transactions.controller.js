@@ -80,8 +80,6 @@ exports.createTransaction = async (request, response) => {
         }
 
         const transactions = await transactionsModel.insert(request.body);
-
-        // Update product stock
         try {
             const getProductQuery = `
                 SELECT stock FROM product
@@ -94,7 +92,6 @@ exports.createTransaction = async (request, response) => {
                 const currentStock = product.rows[0].stock;
                 const updatedStock = currentStock - quantity_sold;
 
-                // Update stok produk
                 await productController.updateProductStock(product_id, updatedStock);
             }
         } catch (error) {

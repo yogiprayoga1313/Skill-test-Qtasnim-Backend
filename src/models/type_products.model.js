@@ -42,4 +42,16 @@ DELETE FROM "type_products" WHERE "id"=$1
   const { rows } = await db.query(query, values)
   return rows[0]
 }
+
+exports.update = async function (id, data) {
+  const query = `
+UPDATE "type_products" 
+SET "name_type_product"=$2
+WHERE "id"=$1
+RETURNING *
+`
+  const values = [id, data.name_type_product]
+  const { rows } = await db.query(query, values)
+  return rows[0]
+}
   
