@@ -1,6 +1,6 @@
 const db= require('../helpers/db.helpers')
 
-exports.findAllProducts = async function (page, search, sort, sortBy,limit) {
+exports.findAllProducts = async function (page, limit, search, sort, sortBy) {
   page = parseInt(page) || 1
   limit = parseInt(limit) || 5
   search = search || ""
@@ -27,10 +27,32 @@ exports.findAllProducts = async function (page, search, sort, sortBy,limit) {
   return rows
 }
 
+exports.countProduct = async function (search) {
+  search = search || ""
+
+  const query = `
+  SELECT
+  COUNT(*) AS "totalData"
+  FROM "product"
+  JOIN "stok" ON "stok"."product_id" = "product"."id"
+  JOIN "type_products" ON "product"."type_id" = "type_products"."id"
+  WHERE product.name_product LIKE $1
+`;
+
+  const values = [`%${search}%`]
+  const { rows } = await db.query(query, values)
+  return rows[0]
+}
+
 
 exports.findOne = async function (id) {
   const query = `
-SELECT  * FROM "product" WHERE id=$1
+SELECT
+"product".*,
+"stok"."quantity"
+FROM "product"
+JOIN "stok" ON "stok"."product_id" = "product"."id"
+WHERE "product"."id"=$1
 `
   const values = [id]
   const { rows } = await db.query(query, values)
@@ -47,15 +69,6 @@ VALUES ($1,$2) RETURNING *
   return rows[0]
 }
 
-exports.findOne = async function (id) {
-  const query = `
-SELECT  * FROM "product" WHERE id=$1
-`
-  const values = [id]
-  const { rows } = await db.query(query, values)
-  return rows[0]
-}
-
 exports.destroy = async function (id) {
   const query = `
 DELETE FROM "product" WHERE "id"=$1
@@ -67,12 +80,12 @@ DELETE FROM "product" WHERE "id"=$1
 
 exports.updateStock = async function (product_id, new_stock) {
   const query = `
-      UPDATE product
-      SET stock = $1
-      WHERE id = $2
+      UPDATE stok
+      SET quantity = $2
+      WHERE product_id = $1
       RETURNING *
   `;
-  const values = [new_stock, product_id];
+  const values = [product_id,new_stock];
 
   try {
       const updatedProduct = await db.query(query, values);

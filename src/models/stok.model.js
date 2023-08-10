@@ -38,7 +38,14 @@ DELETE FROM "stok" WHERE "id"=$1
     const { rows } = await db.query(query, values)
     return rows[0]
 }
-
+exports.destroyByProductId = async function (id) {
+    const query = `
+DELETE FROM "stok" WHERE "product_id"=$1
+`
+    const values = [id]
+    const { rows } = await db.query(query, values)
+    return rows[0]
+}
 exports.insert = async function (data) {
     const query = `
   INSERT INTO "stok" ("product_id", "quantity") 

@@ -1,18 +1,23 @@
 const db= require('../helpers/db.helpers')
 
-exports.findAllTransactions = async function (page, search, sort, sortBy) {
+exports.findAllTransactions = async function (page, limit, search, sort, sortBy) {
     page = parseInt(page) || 1
+    limit = parseInt(limit) || 5
     search = search || ""
     sort = sort || "id"
     sortBy = sortBy || "ASC"
+    const offset = (page - 1) * limit
+
 
     const query = `
         SELECT transactions.*, product.name_product
         FROM "transactions"
-        JOIN "product" ON transactions.product_id = product.id
-        ORDER BY "${sort}" ${sortBy} 
+        LEFT JOIN "product" ON transactions.product_id = product.id
+        WHERE product.name_product LIKE $3
+        ORDER BY "${sort}" ${sortBy} LIMIT $1  OFFSET $2
     `
-    const { rows } = await db.query(query)
+    const values = [limit,offset,`%${search}%`]
+    const { rows } = await db.query(query, values)
     return rows
 }
 
