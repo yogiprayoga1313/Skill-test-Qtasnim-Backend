@@ -77,3 +77,29 @@ exports.deleteType_poducts = async (request, response) => {
         console.log(err)
     }
 }
+
+exports.updateType_product = async (request, response) => {
+    try{
+        if(!request.params.id || isNaN(request.params.id)){
+            throw Error("id_empty")
+        }
+        const resultUpdate = await type_productsModel.update(request.params.id, request.body)
+        if(resultUpdate){
+            return response.json({
+                success: true,
+                message: "Update product type sucessfully",
+                results: resultUpdate
+            })
+        }
+        else{
+            return response.status(404).json({
+                success: false,
+                message: "Error : Data not found",
+                results: ""
+            })
+        }
+    }
+    catch(err){
+        return errorHandler(response, err)
+    }
+}

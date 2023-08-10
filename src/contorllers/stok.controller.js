@@ -40,7 +40,7 @@ exports.getStok = async (request, response) => {
 exports.createStok = async (request, response) => {
     try{
         if(!request.product_id,
-            !request.body.stok){
+            !request.body.quantity){
             return response.status(404).json({
                 success: false,
                 message: "Data cannot be empty!",
@@ -109,5 +109,31 @@ exports.deleteStok = async (request, response) => {
     }
     catch(err){
         console.log(err)
+    }
+}
+
+exports.updateStok = async (request, response) => {
+    try{
+        if(!request.params.id || isNaN(request.params.id)){
+            throw Error("id_empty")
+        }
+        const resultUpdate = await StokModel.update(request.params.id, request.body)
+        if(resultUpdate){
+            return response.json({
+                success: true,
+                message: "Update Stok sucessfully",
+                results: resultUpdate
+            })
+        }
+        else{
+            return response.status(404).json({
+                success: false,
+                message: "Error : Data not found",
+                results: ""
+            })
+        }
+    }
+    catch(err){
+        return errorHandler(response, err)
     }
 }

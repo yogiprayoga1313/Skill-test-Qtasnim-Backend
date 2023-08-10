@@ -4,6 +4,6 @@ const transactionsController = require("../contorllers/transactions.controller")
 
 transactionsRouter.get("/", transactionsController.getTransactions)
 transactionsRouter.post("/", transactionsController.createTransaction)
-// transactionsRouter.delete("/:id", transactionsController.deleteTransactions)
+transactionsRouter.delete("/:id", transactionsController.deleteTransactions)
 
 module.exports = transactionsRouter
