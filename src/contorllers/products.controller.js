@@ -4,6 +4,7 @@ const stockModel = require("../models/stok.model")
 exports.getProducts = async (request, response) => {
     try { 
         const {page, limit, search, sort, sortBy} = request.query
+
         const data = await productModel.findAllProducts(page, limit, search, sort, sortBy)
         const countProduct = await productModel.countProduct(page, limit, search, sort, sortBy)
         const totalPage = Math.ceil(parseInt(countProduct.totalData)/parseInt(limit || 5))
@@ -51,13 +52,14 @@ exports.getOneProduct = async (request, response) => {
 }
 
 exports.createProducts = async (request, response) => {
+    // return console.log(request.body)
     try{
         if(!request.body.name_product,
-            !request.body.type_id){
+            !request.body.type_id,
+            !request.body.quantity){
             return response.status(404).json({
                 success: false,
-                message: "Data cannot be empty!",
-                results: ""
+                message: "Data cannot be empty!"
             })
         }
         const product = await productModel.insert(request.body)

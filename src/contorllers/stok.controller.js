@@ -1,7 +1,6 @@
 const StokModel = require("../models/stok.model")
 
 exports.getStok = async (request, response) => {
-    console.log(request.query)
     try { 
         const sortWhaitlist = ["name"]
         if(request.query.sort && !sortWhaitlist.includes(request.query.sort)){

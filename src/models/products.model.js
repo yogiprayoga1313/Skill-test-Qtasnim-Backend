@@ -1,6 +1,7 @@
 const db= require('../helpers/db.helpers')
 
 exports.findAllProducts = async function (page, limit, search, sort, sortBy) {
+  console.log(limit,"limit")
   page = parseInt(page) || 1
   limit = parseInt(limit) || 5
   search = search || ""
@@ -10,18 +11,16 @@ exports.findAllProducts = async function (page, limit, search, sort, sortBy) {
   const offset = (page - 1) * limit
 
   const query = `
-  SELECT product.*, type_products.name_type_product, stok.quantity
+  SELECT
+  "product".*,
+  "type_products"."name_type_product",
+  "stok"."quantity"
   FROM "product"
-  JOIN "type_products" ON product.type_id = type_products.id
-  LEFT JOIN (
-      SELECT product_id, SUM(quantity) AS quantity
-      FROM "stok"
-      GROUP BY product_id
-  ) AS stok ON product.id = stok.product_id
+  INNER JOIN "type_products" ON "type_products"."id" = "product"."type_id"
+  INNER JOIN "stok" ON "stok"."product_id" = "product"."id"
   WHERE product.name_product LIKE $3
   ORDER BY "${sort}" ${sortBy} LIMIT $1  OFFSET $2
-`;
-
+  `
   const values = [limit,offset,`%${search}%`]
   const { rows } = await db.query(query, values)
   return rows
@@ -47,13 +46,18 @@ exports.countProduct = async function (search) {
 
 exports.findOne = async function (id) {
   const query = `
-SELECT
-"product".*,
-"stok"."quantity"
-FROM "product"
-JOIN "stok" ON "stok"."product_id" = "product"."id"
-WHERE "product"."id"=$1
-`
+  SELECT
+  "product".*,
+  "stok"."quantity",
+  "type_products"."name_type_product",
+  COALESCE(SUM("transactions"."quantity_sold"), 0) AS "quantity_sold"
+  FROM "product"
+  JOIN "stok" ON "stok"."product_id" = "product"."id"
+  JOIN "type_products" ON "type_products"."id" = "product"."type_id"
+  LEFT JOIN "transactions" ON "transactions"."product_id" = "product"."id"
+  WHERE "product"."id"=$1
+  GROUP BY "product"."id", "stok"."quantity", "type_products"."name_type_product"
+  `
   const values = [id]
   const { rows } = await db.query(query, values)
   return rows[0]
