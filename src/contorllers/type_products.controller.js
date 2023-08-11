@@ -1,7 +1,6 @@
 const type_productsModel = require("../models/type_products.model")
 
 exports.getType_products = async (request, response) => {
-    console.log(request.query)
     try { 
         const sortWhaitlist = ["name"]
         if(request.query.sort && !sortWhaitlist.includes(request.query.sort)){

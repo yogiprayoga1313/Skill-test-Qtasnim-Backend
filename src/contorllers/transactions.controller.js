@@ -4,7 +4,6 @@ const productModel = require("../models/products.model")
 const productController = require('../contorllers/products.controller');
 
 exports.getTransactions = async (request, response) => {
-    console.log(request.query)
     try { 
         const {page, limit, search, sort, sortBy} = request.query
 
