@@ -60,7 +60,7 @@ exports.update = async function (id, data) {
     const query = `
 UPDATE "stok" 
 SET "quantity"=$2
-WHERE "id"=$1
+WHERE "product_id"=$1
 RETURNING *
 `
     const values = [id, data.quantity]
