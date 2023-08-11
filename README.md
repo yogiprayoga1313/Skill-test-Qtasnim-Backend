@@ -7,4 +7,4 @@ How To instalation
 4. done
 
 DATABASE:
-# DATABASE="postgres://postgres:1@127.0.0.1:5432/sales?schema=public"
+DATABASE="postgres://postgres:1@127.0.0.1:5432/sales?schema=public"
